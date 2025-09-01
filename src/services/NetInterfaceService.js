@@ -1,6 +1,3 @@
-/**
- * @fileoverview Utility to find the best network device.
- */
 import { exec } from 'child_process';
 import cap from 'cap';
 
@@ -25,7 +22,7 @@ function isVirtual(name) {
 export function detectTraffic(deviceIndex, devices) {
     return new Promise((resolve) => {
         let count = 0;
-        let c; // Declare the cap object outside the try block
+        let c;
 
         const cleanup = () => {
             if (c) {
@@ -139,8 +136,6 @@ export async function findByRoute(devices) {
 
 /**
  * Finds the most suitable default network device by using the system's route table.
- * This is a more reliable alternative to traffic detection, as it avoids
- * low-level network operations that can cause crashes.
  * @param {Object} devices A map of network devices.
  * @returns {Promise<number|undefined>} The index of the default network device.
  */
