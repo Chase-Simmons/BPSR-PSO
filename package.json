@@ -1,7 +1,7 @@
 {
     "name": "bpsr_pso",
     "productName": "BPSR PSO",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "description": "Blue Protocol: Star Resonance - Per Second Overlay",
     "main": "src/index.js",
     "scripts": {
