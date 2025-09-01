@@ -93,3 +93,4 @@ out/
 
 #local store
 users.json
+windowConfig.json
