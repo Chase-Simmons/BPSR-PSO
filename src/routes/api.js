@@ -220,5 +220,99 @@ export function createApiRouter(isPaused, SETTINGS_PATH) {
         res.json({ code: 0, data: globalSettings });
     });
 
+    // Fight History API Endpoints
+
+    // Get current fight data
+    router.get('/fight/current', (req, res) => {
+        const currentFight = userDataManager.getCurrentFight();
+        res.json({
+            code: 0,
+            data: currentFight
+        });
+    });
+
+    // Get current fight status (for debugging)
+    router.get('/fight/status', (req, res) => {
+        const fightStatus = userDataManager.getCurrentFightStatus();
+        res.json({
+            code: 0,
+            data: fightStatus
+        });
+    });
+
+    // Get all completed fights
+    router.get('/fight/list', (req, res) => {
+        const fights = userDataManager.getAllFights();
+        res.json({
+            code: 0,
+            data: fights
+        });
+    });
+
+    // Get cumulative statistics across all fights
+    router.get('/fight/cumulative', (req, res) => {
+        const cumulativeStats = userDataManager.getCumulativeStats();
+        res.json({
+            code: 0,
+            data: cumulativeStats
+        });
+    });
+
+    // Get specific fight data
+    router.get('/fight/:fightId', (req, res) => {
+        const { fightId } = req.params;
+        const fightData = userDataManager.getFightData(fightId);
+        
+        if (!fightData) {
+            return res.status(404).json({
+                code: 1,
+                msg: 'Fight not found'
+            });
+        }
+        
+        res.json({
+            code: 0,
+            data: fightData
+        });
+    });
+
+    // Clear fight history
+    router.post('/fight/clear', (req, res) => {
+        userDataManager.clearFightHistory();
+        logger.info('Fight history has been cleared!');
+        res.json({
+            code: 0,
+            msg: 'Fight history has been cleared!'
+        });
+    });
+
+    // Force start new fight (for testing)
+    router.post('/fight/force-new', (req, res) => {
+        const timestamp = Date.now();
+        userDataManager.forceNewFight(timestamp);
+        res.json({
+            code: 0,
+            msg: `Forced new fight started: fight_${timestamp}`
+        });
+    });
+
+    // Update fight timeout
+    router.post('/fight/timeout', (req, res) => {
+        const { timeout } = req.body;
+        if (typeof timeout !== 'number' || timeout < 5000 || timeout > 60000) {
+            return res.status(400).json({
+                code: 1,
+                msg: 'Invalid timeout value. Must be between 5000 and 60000 milliseconds.'
+            });
+        }
+        
+        userDataManager.updateFightTimeout(timeout);
+        logger.info(`Fight timeout updated to ${timeout}ms (${timeout/1000}s)`);
+        res.json({
+            code: 0,
+            msg: `Fight timeout updated to ${timeout/1000} seconds`
+        });
+    });
+
     return router;
 }

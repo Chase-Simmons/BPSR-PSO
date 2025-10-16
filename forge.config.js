@@ -4,7 +4,7 @@ const { FuseV1Options, FuseVersion } = require('@electron/fuses');
 module.exports = {
     packagerConfig: {
         name: 'BPSR-PSO',
-        icon: './resources/ico',
+        icon: './resources/app.ico',
         asar: true,
         extraResource: ['./resources/npcap-1.83.exe'],
     },
@@ -13,7 +13,7 @@ module.exports = {
         {
             name: '@electron-forge/maker-squirrel',
             config: {
-                setupIcon: './resources/icon.ico',
+                setupIcon: './resources/app.ico',
             },
         },
         {

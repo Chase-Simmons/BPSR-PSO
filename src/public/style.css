@@ -184,6 +184,50 @@ body {
     font-size: 14px;
 }
 
+.settings-option label {
+    font-weight: 500;
+    color: #e0e0e0;
+}
+
+.settings-option input[type="range"] {
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: #444;
+    outline: none;
+    -webkit-appearance: none;
+}
+
+.settings-option input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #4a9eff;
+    cursor: pointer;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.settings-option input[type="range"]::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #4a9eff;
+    cursor: pointer;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+#timeoutValue {
+    font-weight: 600;
+    color: #4a9eff;
+    font-size: 16px;
+    text-align: center;
+    margin-top: 4px;
+}
+
 .hidden {
     display: none !important;
 }
@@ -303,4 +347,176 @@ body {
     text-align: right;
     white-space: nowrap;
     text-shadow: 1px 1px 1px #000;
+}
+
+/* Fight History Styles */
+.history-container {
+    flex-grow: 1;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    color: #fff;
+    overflow-y: auto;
+}
+
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 12px;
+}
+
+.history-header h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.history-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.history-controls button {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.history-controls button:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.history-controls button.active {
+    background: rgba(76, 175, 80, 0.3);
+    border-color: rgba(76, 175, 80, 0.5);
+}
+
+.history-controls button:last-child {
+    background: rgba(244, 67, 54, 0.2);
+    border-color: rgba(244, 67, 54, 0.4);
+}
+
+.history-controls button:last-child:hover {
+    background: rgba(244, 67, 54, 0.3);
+}
+
+.history-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.fight-view {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.fight-info h3 {
+    margin: 0 0 12px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 8px;
+}
+
+.fight-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.stat-label {
+    font-size: 13px;
+    color: #ccc;
+}
+
+.stat-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.fight-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.fight-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.fight-item:hover {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.fight-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.fight-item-id {
+    font-size: 12px;
+    color: #999;
+}
+
+.fight-item-time {
+    font-size: 11px;
+    color: #666;
+}
+
+.fight-item-stats {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.fight-item-damage {
+    font-size: 13px;
+    font-weight: 600;
+    color: #ff6b6b;
+}
+
+.fight-item-healing {
+    font-size: 12px;
+    color: #4ecdc4;
+}
+
+.fight-item-duration {
+    font-size: 11px;
+    color: #999;
 }
