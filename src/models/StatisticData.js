@@ -119,4 +119,14 @@ export class StatisticData {
             max: 0,
         };
     }
+
+    /** Reset time range for new fight - keeps damage/healing stats but resets DPS timer */
+    resetTimeRange() {
+        this.timeRange = [];
+        this.realtimeWindow = [];
+        this.realtimeStats = {
+            value: 0,
+            max: 0,
+        };
+    }
 }

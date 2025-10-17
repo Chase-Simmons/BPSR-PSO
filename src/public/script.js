@@ -32,10 +32,13 @@ const pauseButton = document.getElementById('pauseButton');
 const clearButton = document.getElementById('clearButton');
 const helpButton = document.getElementById('helpButton');
 const settingsButton = document.getElementById('settingsButton');
+const historyButton = document.getElementById('historyButton');
 const closeButton = document.getElementById('closeButton');
-const allButtons = [clearButton, pauseButton, helpButton, settingsButton, closeButton];
+const allButtons = [clearButton, pauseButton, helpButton, settingsButton, historyButton, closeButton];
 const serverStatus = document.getElementById('serverStatus');
 const opacitySlider = document.getElementById('opacitySlider');
+const timeoutSlider = document.getElementById('timeoutSlider');
+const timeoutValue = document.getElementById('timeoutValue');
 
 let allUsers = {};
 let userColors = {};
@@ -229,6 +232,27 @@ function connectWebSocket() {
         updateAll();
     });
 
+    socket.on('data_cleared', () => {
+        console.log('Data cleared - new fight started');
+        allUsers = {};
+        userColors = {};
+        updateAll();
+    });
+
+    socket.on('new_fight_started', (data) => {
+        console.log(`New fight started: ${data.fightId}`);
+        allUsers = {};
+        userColors = {};
+        updateAll();
+    });
+
+    socket.on('fight_ended', () => {
+        console.log('Fight ended - clearing main window');
+        allUsers = {};
+        userColors = {};
+        updateAll();
+    });
+
     socket.on('connect_error', (error) => {
         showServerStatus('disconnected');
         console.error('WebSocket connection error:', error);
@@ -283,6 +307,39 @@ function setBackgroundOpacity(value) {
     document.documentElement.style.setProperty('--main-bg-opacity', value);
 }
 
+function updateTimeoutValue() {
+    console.log('Updating timeout display to:', timeoutSlider.value);
+    timeoutValue.textContent = timeoutSlider.value;
+}
+
+async function updateFightTimeout(seconds) {
+    try {
+        console.log(`Updating fight timeout to ${seconds} seconds (${seconds * 1000}ms)`);
+        const response = await fetch(`http://${SERVER_URL}/api/fight/timeout`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ timeout: seconds * 1000 }) // Convert to milliseconds
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            console.log(`Fight timeout updated successfully:`, result);
+        } else {
+            console.error('Failed to update fight timeout:', response.status, response.statusText);
+        }
+    } catch (error) {
+        console.error('Error updating fight timeout:', error);
+    }
+}
+
+// Fight History Functions
+function toggleHistory() {
+    // Open history window using Electron API
+    window.electronAPI.openHistoryWindow();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     initialize();
 
@@ -290,6 +347,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     opacitySlider.addEventListener('input', (event) => {
         setBackgroundOpacity(event.target.value);
+    });
+
+    // Initialize timeout slider
+    console.log('Timeout slider element:', timeoutSlider);
+    console.log('Timeout value element:', timeoutValue);
+    updateTimeoutValue();
+    timeoutSlider.addEventListener('input', (event) => {
+        console.log('Timeout slider changed to:', event.target.value);
+        updateTimeoutValue();
+        updateFightTimeout(parseInt(event.target.value));
     });
 
     // Listen for the passthrough toggle event from the main process
@@ -314,5 +381,6 @@ document.addEventListener('DOMContentLoaded', () => {
 window.clearData = clearData;
 window.togglePause = togglePause;
 window.toggleSettings = toggleSettings;
+window.toggleHistory = toggleHistory;
 window.closeClient = closeClient;
 window.toggleHelp = toggleHelp;

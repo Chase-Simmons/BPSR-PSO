@@ -1,1 +1,153 @@
-##TODO
+name: Build and Package
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+  release:
+    types: [ published ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18.x'
+        cache: 'npm'
+        
+    - name: Clean npm cache and prepare for fresh install
+      run: |
+        npm cache clean --force
+        # Force remove node_modules with retry logic
+        if (Test-Path "node_modules") {
+          Write-Host "Removing existing node_modules..."
+          $retryCount = 0
+          do {
+            try {
+              Remove-Item -Recurse -Force "node_modules" -ErrorAction Stop
+              Write-Host "Successfully removed node_modules"
+              break
+            } catch {
+              $retryCount++
+              Write-Host "Attempt $retryCount failed: $($_.Exception.Message)"
+              if ($retryCount -lt 3) {
+                Start-Sleep -Seconds 2
+                # Try to unlock files by killing any node processes
+                Get-Process -Name "node" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+              } else {
+                Write-Host "Failed to remove node_modules after 3 attempts, continuing anyway"
+                break
+              }
+            }
+          } while ($retryCount -lt 3)
+        }
+        
+    - name: Verify package-lock.json exists
+      run: |
+        if (-not (Test-Path "package-lock.json")) {
+          Write-Host "package-lock.json not found, generating it..."
+          npm install --package-lock-only
+        } else {
+          Write-Host "package-lock.json exists"
+        }
+        
+    - name: Install dependencies with npm ci
+      run: npm ci --prefer-offline --no-audit --no-fund
+      
+    - name: Debug node_modules structure
+      run: |
+        Write-Host "Checking node_modules structure..."
+        if (Test-Path "node_modules") {
+          Write-Host "node_modules exists"
+          Get-ChildItem "node_modules" | Where-Object { $_.Name -like "*electron-forge*" } | ForEach-Object { Write-Host "Found: $($_.Name)" }
+        } else {
+          Write-Host "node_modules does not exist"
+        }
+        
+    - name: Verify electron-forge makers are installed
+      run: |
+        Write-Host "Checking for maker-squirrel..."
+        if (Test-Path "node_modules\@electron-forge\maker-squirrel") {
+          Write-Host "maker-squirrel found"
+          Get-ChildItem "node_modules\@electron-forge\maker-squirrel" | Select-Object Name
+        } else {
+          Write-Host "maker-squirrel NOT found"
+          Write-Host "Available in @electron-forge:"
+          if (Test-Path "node_modules\@electron-forge") {
+            Get-ChildItem "node_modules\@electron-forge" | Select-Object Name
+          }
+        }
+        
+        Write-Host "Checking for maker-zip..."
+        if (Test-Path "node_modules\@electron-forge\maker-zip") {
+          Write-Host "maker-zip found"
+        } else {
+          Write-Host "maker-zip NOT found"
+        }
+      
+    - name: Build and package application
+      run: npm run make
+      env:
+        # Disable interactive prompts during build
+        CI: true
+        
+    - name: Create release package
+      id: create-release
+      run: |
+        Write-Host "Creating release package from squirrel.windows/x64 folder..."
+        if (Test-Path "out/make/squirrel.windows/x64") {
+          Write-Host "Found squirrel.windows/x64 folder, creating zip..."
+          $tagName = if ($env:GITHUB_REF_TYPE -eq "tag") { $env:GITHUB_REF_NAME } else { "dev-$env:GITHUB_SHA" }
+          $zipName = "BPSR-PSO-Release-$tagName.zip"
+          Compress-Archive -Path "out/make/squirrel.windows/x64/*" -DestinationPath $zipName -Force
+          Write-Host "Release package created: $zipName"
+          
+          # List contents of the zip for verification
+          Write-Host "Contents of release package:"
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          [System.IO.Compression.ZipFile]::OpenRead($zipName).Entries | ForEach-Object { Write-Host "  $($_.FullName)" }
+          
+          # Set the zip name as an output for the next step
+          echo "ZIP_NAME=$zipName" >> $env:GITHUB_OUTPUT
+        } else {
+          Write-Host "squirrel.windows/x64 folder not found!"
+          Write-Host "Available directories in out/make:"
+          if (Test-Path "out/make") {
+            Get-ChildItem "out/make" | ForEach-Object { Write-Host "  $($_.Name)" }
+          }
+          echo "ZIP_NAME=" >> $env:GITHUB_OUTPUT
+        }
+        
+    - name: Upload Windows artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: windows-packages
+        path: |
+          ${{ steps.create-release.outputs.ZIP_NAME }}
+        retention-days: 30
+
+  create-release:
+    if: github.event_name == 'release'
+    needs: build
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          windows-packages/*
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

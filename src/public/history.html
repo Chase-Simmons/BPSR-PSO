@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Fight History - BPSR-PSO</title>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" href="style.css" />
+        <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    </head>
+    <body>
+        <div id="app-wrapper">
+            <div class="main-container">
+                <div class="controls">
+                    <div class="title-container">
+                        <div id="serverStatus" class="status-indicator"></div>
+                        <span class="app-title">Fight History</span>
+                    </div>
+                    <div class="button-group">
+                        <button id="viewCumulativeButton" onclick="viewCumulativeStats()" title="Cumulative Stats">Cumulative</button>
+                        <button id="viewHistoryButton" onclick="viewFightHistory()" title="Fight History" class="active">History</button>
+                        <button id="clearHistoryButton" onclick="clearFightHistory()" title="Clear History">Clear</button>
+                        <button id="closeButton" onclick="window.close()" title="Close Window">X</button>
+                    </div>
+                </div>
+                <div id="columnsContainer" class="columns-container hidden"></div>
+                <div id="historyContainer" class="history-container">
+                    <div id="historyContent" class="history-content">
+                        <div id="cumulativeView" class="fight-view hidden">
+                            <div class="fight-info">
+                                <div id="cumulativeStats" class="fight-stats"></div>
+                            </div>
+                        </div>
+                        <div id="fightListView" class="fight-view">
+                            <div class="fight-info">
+                                <h3>Fight History</h3>
+                                <div id="fightList" class="fight-list"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script src="history.js"></script>
+    </body>
+</html>

@@ -71,6 +71,7 @@ export class UserData {
         this.subProfession = '';
         this.attr = {};
         this.lastUpdateTime = Date.now();
+        this.lastFightId = null; // Track which fight this user data belongs to
     }
 
     _touch() {
@@ -167,7 +168,7 @@ export class UserData {
 
     /** 获取用户数据摘要 */
     getSummary() {
-        return {
+        const summary = {
             realtime_dps: this.damageStats.realtimeStats.value,
             realtime_dps_max: this.damageStats.realtimeStats.max,
             total_dps: this.getTotalDps(),
@@ -185,6 +186,20 @@ export class UserData {
             max_hp: this.attr.max_hp,
             dead_count: this.deadCount,
         };
+        
+        // Debug: Check if the summary contains string representations
+        if (typeof summary.total_damage === 'string' || typeof summary.total_healing === 'string') {
+            console.warn(`User ${this.uid} getSummary() returning string data:`, {
+                total_damage_type: typeof summary.total_damage,
+                total_healing_type: typeof summary.total_healing,
+                total_damage: summary.total_damage,
+                total_healing: summary.total_healing,
+                damageStats_stats: this.damageStats.stats,
+                healingStats_stats: this.healingStats.stats
+            });
+        }
+        
+        return summary;
     }
 
     /** 获取技能统计数据 */
@@ -262,11 +277,36 @@ export class UserData {
 
     /** 重置数据 预留 */
     reset() {
+        // Preserve user identity and attributes
+        const preservedName = this.name;
+        const preservedProfession = this.profession;
+        const preservedSubProfession = this.subProfession;
+        const preservedAttr = { ...this.attr };
+        
+        // Reset all combat data
         this.damageStats.reset();
         this.healingStats.reset();
         this.takenDamage = 0;
         this.skillUsage.clear();
         this.fightPoint = 0;
+        
+        // Restore preserved data
+        this.name = preservedName;
+        this.profession = preservedProfession;
+        this.subProfession = preservedSubProfession;
+        this.attr = preservedAttr;
+        
+        this._touch();
+    }
+
+    /** Reset time range for new fight - keeps damage/healing stats but resets DPS timer */
+    resetTimeRange() {
+        this.damageStats.resetTimeRange();
+        this.healingStats.resetTimeRange();
+        // Reset time range for all skill usage stats
+        for (const [skillId, stat] of this.skillUsage) {
+            stat.resetTimeRange();
+        }
         this._touch();
     }
 }

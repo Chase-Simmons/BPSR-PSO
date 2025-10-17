@@ -1,11 +1,12 @@
 {
     "name": "bpsr_pso",
     "productName": "BPSR PSO",
-    "version": "2.0.1",
+    "version": "2.1.0",
     "description": "Blue Protocol: Star Resonance - Per Second Overlay",
     "main": "src/index.js",
     "scripts": {
         "start": "electron-forge start",
+        "build": "electron-forge start",
         "package": "electron-forge package",
         "make": "electron-forge make",
         "publish": "electron-forge publish",

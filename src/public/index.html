@@ -22,6 +22,7 @@
                     <div class="button-group">
                         <button id="clearButton" onclick="clearData()" title="Clear Data">Clear</button>
                         <button id="pauseButton" onclick="togglePause()" title="Pause/Resume">Pause</button>
+                        <button id="historyButton" onclick="toggleHistory()" title="Fight History">📊</button>
                         <button id="helpButton" onclick="toggleHelp()" title="Help">❓</button>
                         <button id="settingsButton" onclick="toggleSettings()" title="Settings">⚙️</button>
                         <button id="closeButton" onclick="closeClient()" title="Close Client">X</button>
@@ -33,6 +34,11 @@
                     <div class="settings-option">
                         <label for="opacitySlider">Background Opacity</label>
                         <input type="range" id="opacitySlider" min="0" max="1" step="0.05" value="0.05" />
+                    </div>
+                    <div class="settings-option">
+                        <label for="timeoutSlider">Fight Timeout (seconds)</label>
+                        <input type="range" id="timeoutSlider" min="5" max="60" step="1" value="15" />
+                        <span id="timeoutValue">15</span>
                     </div>
                 </div>
                 <div id="helpContainer" class="help-container hidden">
@@ -62,6 +68,7 @@
                         </li>
                     </ul>
                 </div>
+                <!-- History functionality moved to separate window -->
             </div>
         </div>
         <script src="script.js"></script>

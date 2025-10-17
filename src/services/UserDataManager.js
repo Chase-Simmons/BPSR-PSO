@@ -5,6 +5,7 @@ import socket from './Socket.js';
 import logger from './Logger.js';
 import fsPromises from 'fs/promises';
 import path from 'path';
+import fightHistoryManager from './FightHistoryManager.js';
 
 class UserDataManager {
     constructor(logger) {
@@ -35,12 +36,20 @@ class UserDataManager {
             if (this.lastLogTime < this.lastAutoSaveTime) return;
             this.lastAutoSaveTime = Date.now();
             this.saveAllUserData();
+            
+            // Save user data snapshot to current fight
+            fightHistoryManager.saveUserDataSnapshot(this.users);
         }, 10 * 1000);
 
         // New: Interval to clean up inactive users every 30 seconds
         setInterval(() => {
             this.cleanUpInactiveUsers();
         }, 30 * 1000);
+
+        // Check for fight inactivity every 5 seconds
+        setInterval(() => {
+            fightHistoryManager.checkForInactivity(Date.now());
+        }, 5000);
     }
 
     // New: Method to remove users who have not been updated in 60 seconds
@@ -60,6 +69,7 @@ class UserDataManager {
 
     async init() {
         await this.loadUserCache();
+        await fightHistoryManager.loadFightHistory();
     }
 
     async loadUserCache() {
@@ -142,7 +152,20 @@ class UserDataManager {
         if (config.GLOBAL_SETTINGS.onlyRecordEliteDummy && targetUid !== 75) return;
         this.checkTimeoutClear();
         const user = this.getUser(uid);
+        
+        // Check if this is the first damage after a new fight started
+        const currentFightId = fightHistoryManager.currentFightId;
+        
+        // If user doesn't have a last fight ID or it's different, reset all data for new fight
+        if (!user.lastFightId || user.lastFightId !== currentFightId) {
+            user.reset(); // Reset all damage/healing data for new fight
+            user.lastFightId = currentFightId;
+        }
+        
         user.addDamage(skillId, element, damage, isCrit, isLucky, isCauseLucky, hpLessenValue);
+        
+        // Record activity for fight history
+        fightHistoryManager.recordActivity(Date.now(), 'damage', damage);
     }
 
     addHealing(uid, skillId, element, healing, isCrit, isLucky, isCauseLucky, targetUid) {
@@ -150,7 +173,20 @@ class UserDataManager {
         this.checkTimeoutClear();
         if (uid !== 0) {
             const user = this.getUser(uid);
+            
+            // Check if this is the first healing after a new fight started
+            const currentFightId = fightHistoryManager.currentFightId;
+            
+            // If user doesn't have a last fight ID or it's different, reset all data for new fight
+            if (!user.lastFightId || user.lastFightId !== currentFightId) {
+                user.reset(); // Reset all damage/healing data for new fight
+                user.lastFightId = currentFightId;
+            }
+            
             user.addHealing(skillId, element, healing, isCrit, isLucky, isCauseLucky);
+            
+            // Record activity for fight history
+            fightHistoryManager.recordActivity(Date.now(), 'healing', healing);
         }
     }
 
@@ -304,11 +340,22 @@ class UserDataManager {
     clearAll() {
         const usersToSave = this.users;
         const saveStartTime = this.startTime;
+        
+        // Finalize current fight before clearing
+        if (fightHistoryManager.currentFightId) {
+            fightHistoryManager.finalizeCurrentFight();
+            fightHistoryManager.currentFightId = null;
+            fightHistoryManager.currentFightStartTime = null;
+        }
+        
         this.users = new Map();
         this.startTime = Date.now();
         this.lastAutoSaveTime = 0;
         this.lastLogTime = 0;
         this.saveAllUserData(usersToSave, saveStartTime);
+        
+        // Emit clear event to frontend
+        socket.emit('data_cleared');
     }
 
     getUserIds() {
@@ -375,6 +422,41 @@ class UserDataManager {
 
     getGlobalSettings() {
         return config.GLOBAL_SETTINGS;
+    }
+
+    // Fight History Methods
+    getCurrentFight() {
+        return fightHistoryManager.getCurrentFight();
+    }
+
+    getCurrentFightStatus() {
+        return fightHistoryManager.getCurrentFightStatus();
+    }
+
+    getAllFights() {
+        return fightHistoryManager.getAllFights();
+    }
+
+    getFightData(fightId) {
+        return fightHistoryManager.getFightData(fightId);
+    }
+
+    getCumulativeStats() {
+        return fightHistoryManager.getCumulativeStats();
+    }
+
+    clearFightHistory() {
+        fightHistoryManager.clearHistory();
+    }
+
+    forceNewFight(timestamp) {
+        fightHistoryManager.forceStartNewFight(timestamp).catch(error => {
+            logger.error('Error forcing new fight:', error);
+        });
+    }
+
+    updateFightTimeout(timeoutMs) {
+        fightHistoryManager.updateFightTimeout(timeoutMs);
     }
 }
 
