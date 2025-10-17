@@ -11,6 +11,7 @@ const preloadPath = path.join(__dirname, '../preload.js');
 const htmlPath = path.join(__dirname, '../public/index.html');
 const configPath = path.join(__dirname, '../../windowConfig.json');
 
+
 /**
  * A manager class to handle the application's main window,
  * including its creation, state, and configuration persistence.
@@ -25,6 +26,8 @@ class Window {
         y: undefined,
         passthrough: false,
         lastHeight: 300, // Default restore height for minimize feature
+        windowOpacity: 0.05,
+        sortSelection: 0,
     };
 
     constructor() {
@@ -63,6 +66,8 @@ class Window {
                 y: bounds.y,
                 passthrough: this.config.passthrough,
                 lastHeight: this.config.lastHeight,
+                windowOpacity: this.config.windowOpacity,
+                sortSelection: this.config.sortSelection,
             };
             fs.writeFileSync(configPath, JSON.stringify(configData, null, 4));
         } catch (error) {
@@ -104,6 +109,8 @@ class Window {
             if (this.config.passthrough) {
                 this.setPassthrough(true);
             }
+            this._window.webContents.send('background-opacity', this.config.windowOpacity * 1);
+            this._window.webContents.send('sort-selection', this.config.sortSelection * 1);
         });
 
         return this._window;
@@ -175,10 +182,19 @@ class Window {
         }
     }
 
+    setBackgroundOpacity(value) {
+        this.config.windowOpacity = value * 1;
+    }
+
+    setSortSelection(value) {
+        this.config.sortSelection = value;
+    }
+
     loadURL(url) {
         this._window.loadURL(url);
     }
 }
+
 
 const window = new Window();
 export default window;
