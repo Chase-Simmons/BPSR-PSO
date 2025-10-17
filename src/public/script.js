@@ -36,6 +36,7 @@ const closeButton = document.getElementById('closeButton');
 const allButtons = [clearButton, pauseButton, helpButton, settingsButton, closeButton];
 const serverStatus = document.getElementById('serverStatus');
 const opacitySlider = document.getElementById('opacitySlider');
+const sortSelection = document.getElementById('sortSelection');
 
 let allUsers = {};
 let userColors = {};
@@ -60,7 +61,26 @@ function renderDataList(users) {
     const totalDamageOverall = users.reduce((sum, user) => sum + user.total_damage.total, 0);
     const totalHealingOverall = users.reduce((sum, user) => sum + user.total_healing.total, 0);
 
-    users.sort((a, b) => b.total_dps - a.total_dps);
+    const sortType = sortSelection.options[sortSelection.selectedIndex].text;
+    switch (sortType) {
+    default:
+    case 'totalDamage':
+        users.sort((a, b) => b.total_damage.total - a.total_damage.total
+            || b.total_healing.total - a.total_healing.total);
+        break;
+    case 'totalHealing':
+        users.sort((a, b) => b.total_healing.total - a.total_healing.total
+            || b.total_damage.total - a.total_damage.total);
+        break;
+    case 'totalDPS':
+        users.sort((a, b) => b.total_dps - a.total_dps
+            || b.total_hps - a.total_hps);
+        break;
+    case 'totalHPS':
+        users.sort((a, b) => b.total_hps - a.total_hps
+            || b.total_dps - a.total_dps);
+        break;
+    }
 
     users.forEach((user, index) => {
         if (!userColors[user.id]) {
@@ -290,6 +310,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     opacitySlider.addEventListener('input', (event) => {
         setBackgroundOpacity(event.target.value);
+        window.electronAPI.setBackgroundOpacity(event.target.value);
+    });
+    window.electronAPI.onSetBackgroundOpacity((value) => {
+        opacitySlider.value = value;
+        setBackgroundOpacity(value);
+    });
+
+    sortSelection.addEventListener('change', (event) => {
+        window.electronAPI.setSortSelection(event.target.selectedIndex);
+    });
+    window.electronAPI.onSetSortSelection((value) => {
+        sortSelection.selectedIndex = value;
     });
 
     // Listen for the passthrough toggle event from the main process
