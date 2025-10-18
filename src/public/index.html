@@ -34,6 +34,27 @@
                         <label for="opacitySlider">Background Opacity</label>
                         <input type="range" id="opacitySlider" min="0" max="1" step="0.05" value="0.05" />
                     </div>
+                    <!-- Font selector -->
+                    <div class="settings-option">
+                        <label for="fontSelector">Font Family:</label>
+                        <select id="fontSelector">
+                            <option value="'Roboto Condensed', sans-serif">Roboto Condensed</option>
+                            <option value="Arial, sans-serif">Arial</option>
+                            <option value="'Segoe UI', sans-serif">Segoe UI</option>
+                            <option value="'Courier New', monospace">Courier New</option>
+                            <option value="'Times New Roman', serif">Times New Roman</option>
+                            <option value="'Consolas', 'Courier New', monospace">Consolas / Courier (Monospace)</option>
+                        </select>
+                    </div>
+                    <!-- Resolution scaling -->
+                    <div class="settings-option">
+                        <label for="resolutionSelector">Resolution Scale:</label>
+                        <select id="resolutionSelector">
+                            <option value="scale-1080p" selected>1080p</option>
+                            <option value="scale-2k">2K</option>
+                            <option value="scale-4k">4K</option>
+                        </select>
+                    </div>
                 </div>
                 <div id="helpContainer" class="help-container hidden">
                     <h2>Keyboard Shortcuts</h2>

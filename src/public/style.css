@@ -304,3 +304,53 @@ body {
     white-space: nowrap;
     text-shadow: 1px 1px 1px #000;
 }
+
+/* --- RESOLUTION SCALING CLASSES --- */
+
+/* 1080p (default) */
+body.scale-1080p {
+    font-size: 12px;
+}
+body.scale-1080p .app-title { font-size: 16px; }
+body.scale-1080p .passthrough-title { font-size: 12px; }
+body.scale-1080p .button-group button { font-size: 11px; }
+body.scale-1080p .settings-option { font-size: 14px; }
+body.scale-1080p .rank,
+body.scale-1080p .name { font-size: 13px; }
+body.scale-1080p .stats { font-size: 12px; }
+body.scale-1080p .hps-stats { font-size: 10px; }
+body.scale-1080p .class-icon { width: 18px; height: 18px; }
+body.scale-1080p .main-bar { height: 24px; }
+body.scale-1080p .sub-bar { height: 14px; }
+
+/* 2K */
+body.scale-2k {
+    font-size: 18px;
+}
+body.scale-2k .app-title { font-size: 24px; }
+body.scale-2k .passthrough-title { font-size: 18px; }
+body.scale-2k .button-group button { font-size: 16px; }
+body.scale-2k .settings-option { font-size: 21px; }
+body.scale-2k .rank,
+body.scale-2k .name { font-size: 19px; }
+body.scale-2k .stats { font-size: 18px; }
+body.scale-2k .hps-stats { font-size: 15px; }
+body.scale-2k .class-icon { width: 27px; height: 27px; }
+body.scale-2k .main-bar { height: 36px; }
+body.scale-2k .sub-bar { height: 21px; }
+
+/* 4K */
+body.scale-4k {
+    font-size: 24px;
+}
+body.scale-4k .app-title { font-size: 32px; }
+body.scale-4k .passthrough-title { font-size: 24px; }
+body.scale-4k .button-group button { font-size: 22px; }
+body.scale-4k .settings-option { font-size: 28px; }
+body.scale-4k .rank,
+body.scale-4k .name { font-size: 26px; }
+body.scale-4k .stats { font-size: 24px; }
+body.scale-4k .hps-stats { font-size: 20px; }
+body.scale-4k .class-icon { width: 36px; height: 36px; }
+body.scale-4k .main-bar { height: 48px; }
+body.scale-4k .sub-bar { height: 28px; }
