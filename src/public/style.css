@@ -102,9 +102,11 @@ body {
     background: rgba(255, 255, 255, 0.2);
     transform: translateY(-1px);
 }
+
 .button-group button:active {
     transform: translateY(0);
 }
+
 .button-group button.disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -115,6 +117,7 @@ body {
     background-color: rgba(255, 0, 0, 0.4);
     border-color: rgba(255, 0, 0, 0.6);
 }
+
 #closeButton:hover {
     background-color: rgba(255, 0, 0, 0.6);
 }
@@ -132,18 +135,22 @@ body {
     background-color: #4caf50;
     box-shadow: 0 0 8px #4caf50;
 }
+
 #serverStatus.disconnected {
     background-color: #f44336;
     box-shadow: 0 0 8px #f44336;
 }
+
 #serverStatus.reconnecting {
     background-color: #ffeb3b;
     box-shadow: 0 0 8px #ffeb3b;
 }
+
 #serverStatus.cleared {
     background-color: #2196f3;
     box-shadow: 0 0 8px #2196f3;
 }
+
 #serverStatus.paused {
     background-color: #ff9800;
     box-shadow: 0 0 8px #ff9800;
@@ -160,9 +167,11 @@ body {
     flex-direction: column;
     flex-wrap: nowrap;
 }
+
 .columns-container::-webkit-scrollbar {
     display: none;
 }
+
 .columns-container {
     scrollbar-width: none;
 }
@@ -184,6 +193,94 @@ body {
     font-size: 14px;
 }
 
+.settings-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.settings-section h3 {
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    padding-bottom: 8px;
+}
+
+.keybind-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.keybind-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+}
+
+.keybind-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.keybind-label {
+    color: #fff;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.keybind-shortcut {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffc107;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 80px;
+    text-align: center;
+}
+
+.keybind-shortcut:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.keybind-shortcut.recording {
+    background: rgba(255, 193, 7, 0.2);
+    border-color: #ffc107;
+    color: #fff;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.6;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+.keybind-shortcut.error {
+    background: rgba(244, 67, 54, 0.2);
+    border-color: #f44336;
+    color: #fff;
+}
+
 .hidden {
     display: none !important;
 }
@@ -200,11 +297,13 @@ body {
     border-bottom: 1px solid #555;
     padding-bottom: 5px;
 }
+
 .help-container p,
 .help-container li {
     color: #ccc;
     line-height: 1.6;
 }
+
 .help-container code {
     background-color: rgba(0, 0, 0, 0.5);
     padding: 2px 6px;
@@ -218,10 +317,12 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 6px;
     overflow: hidden;
-    list-style: none; /* Removes the bullet point */
+    list-style: none;
+    /* Removes the bullet point */
     display: flex;
     flex-direction: column;
-    flex-shrink: 0; /* Prevents the item from shrinking below its content size */
+    flex-shrink: 0;
+    /* Prevents the item from shrinking below its content size */
 }
 
 .main-bar {
