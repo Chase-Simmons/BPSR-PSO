@@ -1,0 +1,14 @@
+{
+  "togglePassthrough": "Control+`",
+  "minimizeWindow": "Control+Alt+z",
+  "resizeUp": "Control+Up",
+  "resizeDown": "Control+Down",
+  "resizeLeft": "Control+Left",
+  "resizeRight": "Control+Right",
+  "moveUp": "Control+Alt+Up",
+  "moveDown": "Control+Alt+Down",
+  "moveLeft": "Control+Alt+Left",
+  "moveRight": "Control+Alt+Right",
+  "pauseResume": "Control+[",
+  "clearData": "Control+]"
+}

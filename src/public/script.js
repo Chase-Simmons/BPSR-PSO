@@ -36,6 +36,7 @@ const closeButton = document.getElementById('closeButton');
 const allButtons = [clearButton, pauseButton, helpButton, settingsButton, closeButton];
 const serverStatus = document.getElementById('serverStatus');
 const opacitySlider = document.getElementById('opacitySlider');
+const keybindList = document.getElementById('keybindList');
 
 let allUsers = {};
 let userColors = {};
@@ -46,6 +47,11 @@ let lastWebSocketMessage = Date.now();
 const WEBSOCKET_RECONNECT_INTERVAL = 5000;
 
 const SERVER_URL = 'localhost:8990';
+
+// Keybind management
+let currentKeybinds = {};
+let isRecordingKeybind = false;
+let currentRecordingElement = null;
 
 function formatNumber(num) {
     if (isNaN(num)) return 'NaN';
@@ -283,6 +289,166 @@ function setBackgroundOpacity(value) {
     document.documentElement.style.setProperty('--main-bg-opacity', value);
 }
 
+// Keybind management functions
+async function loadKeybinds() {
+    try {
+        currentKeybinds = await window.electronAPI.getKeybinds();
+        renderKeybindList();
+    } catch (error) {
+        console.error('Failed to load keybinds:', error);
+    }
+}
+
+function renderKeybindList() {
+    keybindList.innerHTML = '';
+    
+    const keybindLabels = {
+        togglePassthrough: 'Toggle Mouse Pass-through',
+        minimizeWindow: 'Minimize Window Content',
+        resizeUp: 'Resize Window Up',
+        resizeDown: 'Resize Window Down',
+        resizeLeft: 'Resize Window Left',
+        resizeRight: 'Resize Window Right',
+        moveUp: 'Move Window Up',
+        moveDown: 'Move Window Down',
+        moveLeft: 'Move Window Left',
+        moveRight: 'Move Window Right',
+        pauseResume: 'Pause/Resume Statistics',
+        clearData: 'Clear Data'
+    };
+    
+    Object.entries(currentKeybinds).forEach(([keybindName, shortcut]) => {
+        const item = document.createElement('div');
+        item.className = 'keybind-item';
+        
+        const label = document.createElement('span');
+        label.className = 'keybind-label';
+        label.textContent = keybindLabels[keybindName] || keybindName;
+        
+        const shortcutElement = document.createElement('span');
+        shortcutElement.className = 'keybind-shortcut';
+        shortcutElement.textContent = shortcut;
+        shortcutElement.dataset.keybindName = keybindName;
+        shortcutElement.addEventListener('click', () => startRecordingKeybind(keybindName, shortcutElement));
+        
+        item.appendChild(label);
+        item.appendChild(shortcutElement);
+        keybindList.appendChild(item);
+    });
+}
+
+async function startRecordingKeybind(keybindName, element) {
+    if (isRecordingKeybind) {
+        await stopRecordingKeybind();
+    }
+    
+    isRecordingKeybind = true;
+    currentRecordingElement = element;
+    element.classList.add('recording');
+    element.textContent = 'Press a key...';
+    
+    // Disable all keybinds temporarily
+    try {
+        await window.electronAPI.disableKeybinds();
+    } catch (error) {
+        console.error('Failed to disable keybinds:', error);
+    }
+    
+    // Add global keydown listener
+    document.addEventListener('keydown', handleKeybindRecording, true);
+}
+
+async function stopRecordingKeybind() {
+    if (currentRecordingElement) {
+        currentRecordingElement.classList.remove('recording');
+        currentRecordingElement.textContent = currentKeybinds[currentRecordingElement.dataset.keybindName];
+    }
+    
+    isRecordingKeybind = false;
+    currentRecordingElement = null;
+    document.removeEventListener('keydown', handleKeybindRecording, true);
+    
+    // Re-enable all keybinds
+    try {
+        await window.electronAPI.enableKeybinds();
+    } catch (error) {
+        console.error('Failed to enable keybinds:', error);
+    }
+}
+
+async function handleKeybindRecording(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    if (!isRecordingKeybind || !currentRecordingElement) return;
+    
+    const keybindName = currentRecordingElement.dataset.keybindName;
+    const modifiers = [];
+    
+    if (event.ctrlKey) modifiers.push('Control');
+    if (event.altKey) modifiers.push('Alt');
+    if (event.shiftKey) modifiers.push('Shift');
+    if (event.metaKey) modifiers.push('Meta');
+    
+    let key = event.key;
+    
+    // Handle special keys
+    if (key === ' ') key = 'Space';
+    if (key === 'ArrowUp') key = 'Up';
+    if (key === 'ArrowDown') key = 'Down';
+    if (key === 'ArrowLeft') key = 'Left';
+    if (key === 'ArrowRight') key = 'Right';
+    
+    // Skip modifier-only keys
+    if (['Control', 'Alt', 'Shift', 'Meta'].includes(key)) return;
+    
+    const newShortcut = modifiers.length > 0 ? `${modifiers.join('+')}+${key}` : key;
+    
+    // Check if shortcut is already in use
+    const isAlreadyUsed = Object.entries(currentKeybinds).some(([name, shortcut]) => 
+        name !== keybindName && shortcut === newShortcut
+    );
+    
+    if (isAlreadyUsed) {
+        currentRecordingElement.classList.add('error');
+        currentRecordingElement.textContent = 'Already used';
+        setTimeout(async () => {
+            currentRecordingElement.classList.remove('error');
+            await stopRecordingKeybind();
+        }, 1500);
+        return;
+    }
+    
+    // Update the keybind
+    await updateKeybind(keybindName, newShortcut);
+    await stopRecordingKeybind();
+}
+
+async function updateKeybind(keybindName, newShortcut) {
+    try {
+        const success = await window.electronAPI.updateKeybind(keybindName, newShortcut);
+        if (success) {
+            currentKeybinds[keybindName] = newShortcut;
+            currentRecordingElement.textContent = newShortcut;
+        } else {
+            currentRecordingElement.classList.add('error');
+            currentRecordingElement.textContent = 'Failed';
+            setTimeout(async () => {
+                currentRecordingElement.classList.remove('error');
+                await stopRecordingKeybind();
+            }, 1500);
+        }
+    } catch (error) {
+        console.error('Failed to update keybind:', error);
+        currentRecordingElement.classList.add('error');
+        currentRecordingElement.textContent = 'Error';
+        setTimeout(async () => {
+            currentRecordingElement.classList.remove('error');
+            await stopRecordingKeybind();
+        }, 1500);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     initialize();
 
@@ -290,6 +456,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     opacitySlider.addEventListener('input', (event) => {
         setBackgroundOpacity(event.target.value);
+    });
+
+    // Load keybinds when settings are opened
+    settingsButton.addEventListener('click', () => {
+        if (!settingsContainer.classList.contains('hidden')) {
+            loadKeybinds();
+        }
     });
 
     // Listen for the passthrough toggle event from the main process
@@ -308,6 +481,15 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             passthroughTitle.classList.add('hidden');
         }
+    });
+
+    // Listen for keybind-triggered actions
+    window.electronAPI.onTriggerPauseResume(() => {
+        togglePause();
+    });
+
+    window.electronAPI.onTriggerClearData(() => {
+        clearData();
     });
 });
 
