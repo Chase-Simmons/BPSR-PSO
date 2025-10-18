@@ -286,11 +286,54 @@ function setBackgroundOpacity(value) {
 document.addEventListener('DOMContentLoaded', () => {
     initialize();
 
-    setBackgroundOpacity(opacitySlider.value);
+    // Restore saved options from localStorage
+    const savedFont = localStorage.getItem('fontFamily');
+    const savedResolution = localStorage.getItem('resolutionScale');
+    const savedOpacity = localStorage.getItem('backgroundOpacity');
 
-    opacitySlider.addEventListener('input', (event) => {
-        setBackgroundOpacity(event.target.value);
-    });
+    // Font selector logic
+    const fontSelector = document.getElementById('fontSelector');
+    if (fontSelector) {
+        if (savedFont) {
+            fontSelector.value = savedFont;
+            document.body.style.fontFamily = savedFont;
+        }
+        fontSelector.addEventListener('change', (event) => {
+            document.body.style.fontFamily = event.target.value;
+            localStorage.setItem('fontFamily', event.target.value);
+        });
+    }
+
+    // Resolution selector logic
+    const resolutionSelector = document.getElementById('resolutionSelector');
+    if (resolutionSelector) {
+        if (savedResolution) {
+            resolutionSelector.value = savedResolution;
+            document.body.classList.remove('scale-1080p', 'scale-2k', 'scale-4k');
+            document.body.classList.add(savedResolution);
+        } else {
+            document.body.classList.add(resolutionSelector.value);
+        }
+        resolutionSelector.addEventListener('change', (event) => {
+            document.body.classList.remove('scale-1080p', 'scale-2k', 'scale-4k');
+            document.body.classList.add(event.target.value);
+            localStorage.setItem('resolutionScale', event.target.value);
+        });
+    }
+
+    // Opacity slider logic
+    if (opacitySlider) {
+        if (savedOpacity !== null) {
+            opacitySlider.value = savedOpacity;
+            setBackgroundOpacity(savedOpacity);
+        } else {
+            setBackgroundOpacity(opacitySlider.value);
+        }
+        opacitySlider.addEventListener('input', (event) => {
+            setBackgroundOpacity(event.target.value);
+            localStorage.setItem('backgroundOpacity', event.target.value);
+        });
+    }
 
     // Listen for the passthrough toggle event from the main process
     window.electronAPI.onTogglePassthrough((isIgnoring) => {
